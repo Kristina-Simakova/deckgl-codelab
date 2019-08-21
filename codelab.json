@@ -1,0 +1,26 @@
+{
+  "environment": "web",
+  "format": "html",
+  "prefix": "https://storage.googleapis.com",
+  "mainga": "UA-49880327-14",
+  "updated": "2019-08-21T18:30:56Z",
+  "id": "your-map-data",
+  "duration": 28,
+  "title": "Data Visualisation with Deck.gl and Google Maps",
+  "authors": "Kristina Simakova",
+  "summary": "In this codelab, you'll learn how to use Deck.gl and Google Maps to visualise data.",
+  "source": "1C5q5X6qyMyYR_WYRixhC8o555G9Nz2Y00a_4cLN0_24",
+  "theme": "maps",
+  "status": [
+    "published"
+  ],
+  "category": [
+    "Maps"
+  ],
+  "tags": [
+    "deck.gl",
+    "maps",
+    "web"
+  ],
+  "url": "your-map-data"
+}
