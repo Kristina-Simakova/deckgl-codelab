@@ -1,0 +1,383 @@
+
+<!doctype html>
+
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+  <meta name="theme-color" content="#4F7DC9">
+  <meta charset="UTF-8">
+  <title>Data Visualisation with Deck.gl and Google Maps</title>
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Source+Code+Pro:400|Roboto:400,300,400italic,500,700|Roboto+Mono">
+  <link rel="stylesheet" href="//fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://storage.googleapis.com/codelab-elements/codelab-elements.css">
+  <style>
+    .success {
+      color: #1e8e3e;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <google-codelab-analytics gaid="UA-49880327-14"></google-codelab-analytics>
+  <google-codelab codelab-gaid=""
+                  id="your-map-data"
+                  title="Data Visualisation with Deck.gl and Google Maps"
+                  environment="web"
+                  feedback-link="">
+    
+      <google-codelab-step label="Introduction" duration="0">
+        <p><strong>Last Updated:</strong> 2019-08-21</p>
+<h2 is-upgraded><strong>Why Deck.gl?</strong></h2>
+<p>deck.gl is a WebGL- powered framework for visual exploratory data analysis of large datasets. <a href="https://deck.gl/#/documentation/overview/introduction" target="_blank">deck.gl</a> is designed to make visualization of large data sets simple. It enables users to quickly get impressive visual results with limited effort through composition of existing layers, while offering a complete architecture for packaging advanced WebGL based visualizations as reusable JavaScript layers.</p>
+<h2 is-upgraded><strong>What you&#39;ll build</strong></h2>
+<p>In this codelab, you&#39;re going to build a simple web app to visualise data by using Google Maps and deck.gl. </p>
+<p class="image-container"><img style="width: 624.00px" src="img/61aadff8a469de20.png"></p>
+<h2 class="checklist" is-upgraded><strong>What you&#39;ll learn</strong></h2>
+<ul class="checklist">
+<li>How to add Google Maps to your project</li>
+<li>How to use Styling Wizard for Google Maps </li>
+<li>How to fetch and visualise data with deck.gl</li>
+</ul>
+<p>This codelab is focused on Google Maps and deck.gl. Non-relevant concepts and code blocks are glossed over and are provided for you to simply copy and paste.</p>
+<h2 is-upgraded><strong>What you&#39;ll need</strong></h2>
+<ul>
+<li>A recent version of Chrome (74 or later)</li>
+<li>Knowledge of HTML, CSS, JavaScript, and <a href="https://developer.chrome.com/devtools" target="_blank">Chrome DevTools</a>.</li>
+</ul>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Getting set up" duration="5">
+        <h2 is-upgraded><strong>Get Google Maps API Key</strong></h2>
+<p>Our project is based on Google Maps. In order to use it, you&#39;ll need to request an API key.</p>
+<p><a href="https://console.cloud.google.com" target="_blank"><paper-button class="colored" raised>Enable Maps API</paper-button></a></p>
+<h3 is-upgraded><img style="width: 624.00px" src="img/47b362b75d25f32c.png"></h3>
+<h2 is-upgraded><strong>Download Sublime</strong></h2>
+<p>You can use any text editor you like. If you do not have any, we recommend to use Sublime.</p>
+<p><a href="https://www.sublimetext.com/" target="_blank"><paper-button class="colored" raised>Download</paper-button></a></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Create index.html" duration="5">
+        <p>By the end of this section, you will get a Google Map view in your project.</p>
+<h2 is-upgraded><strong>Create index.html</strong></h2>
+<p>Create a file named <code>index.html</code> in your project and copy/paste the following contents:</p>
+<p><code>index.html</code></p>
+<pre><code>&lt;html&gt;
+  &lt;head&gt;
+    &lt;style type=&#34;text/css&#34;&gt;
+      body {margin: 0; padding: 0; overflow: hidden;}
+      #container {width: 100vw; height: 100vh;}
+      #tooltip {position: absolute; z-index: 1; background: #000; color: #fff; font-family: sans-serif; font-size: 11px; padding: 4px; padding: 8px; pointer-events: none;}
+    &lt;/style&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&#34;container&#34;&gt;&lt;/div&gt;
+  &lt;/body&gt;
+
+  &lt;script type=&#34;text/javascript&#34;&gt;
+      // app script
+  &lt;/script&gt;
+&lt;/html&gt; </code></pre>
+<h2 is-upgraded><strong>Add Deck.gl dependency </strong></h2>
+<p>Next, we need to tell the browser about our Deck.gl dependency by adding a <code>&lt;script src=&#34;..&#34;</code>. Add the following line to the <code>&lt;head&gt;</code> element in your <code>index.html</code> file. </p>
+<p><code>index.html</code></p>
+<pre><code>&lt;script src=&#34;https://unpkg.com/deck.gl@^7.0.0/dist.min.js&#34;&gt;&lt;/script&gt;</code></pre>
+<h2 is-upgraded><strong>Add Google Maps dependency</strong></h2>
+<p>Add the following line to the <code>&lt;head&gt;</code> of your <code>index.html</code> file and replace <code>Map_Key</code> with your API key from Google Cloud Console</p>
+<p><code>index.html</code></p>
+<pre><code>&lt;script src=&#34;https://maps.googleapis.com/maps/api/js?key=Map_Key&amp;libraries=visualization&amp;v=3.34&#34;&gt;&lt;/script&gt;</code></pre>
+<h2 is-upgraded><strong>Add Google Maps to your page</strong></h2>
+<p>Add the following code below <code>&lt;/body&gt;</code> tag of your <code>index.html</code> file:</p>
+<p><code>index.html</code></p>
+<pre><code>&lt;script type=&#34;text/javascript&#34;&gt;
+    const map = new google.maps.Map(document.getElementById(&#39;container&#39;), {
+      center: {lat: 59.9127, lng: 10.7461},
+      zoom: 15,
+      mapTypeControlOptions: {
+         mapTypeIds: [&#39;roadmap&#39;]
+      }
+    });
+&lt;/script&gt;</code></pre>
+<h2 is-upgraded><strong>Verify Google Maps </strong></h2>
+<p>Now you should be able to see Google Maps on your page zoomed in to Oslo:</p>
+<p class="image-container"><img style="width: 569.60px" src="img/64c532d21145d2b8.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Exploring data" duration="3">
+        <p>We will use Oslo City Bike data in this codelab. You can find all data here:</p>
+<p><a href="https://oslobysykkel.no/en/open-data" target="_blank"><paper-button class="colored" raised>Oslo City Bike data source</paper-button></a></p>
+<p>In this tutorial we are going to use stations and tour data. Here is how the data is structured:</p>
+<p><code>stations.json</code></p>
+<pre><code>{ 
+  last_updated: 1566058257,
+  ttl: 10,
+  data: {
+   stations: [
+    {
+     station_id: &#34;1009&#34;,
+     name: &#34;Borgenveien&#34;,
+     address: &#34;Borgenveien&#34;,
+     lat: 59.942742106473666,
+     lon: 10.703833031254021,
+     capacity: 10
+    }
+   ]
+  }
+}</code></pre>
+<p><code>trips.json</code></p>
+<pre><code>[
+ {
+    &#34;started_at&#34;:&#34;2019-08-01 07:48:19.642000+00:00&#34;,
+    &#34;ended_at&#34;:&#34;2019-08-01 07:56:20.358000+00:00&#34;,
+    &#34;duration&#34;:480,
+    &#34;start_station_id&#34;:&#34;523&#34;,
+    &#34;start_station_name&#34;:&#34;T\u00f8yenbekken&#34;,
+    &#34;start_station_description&#34;:&#34;\u00d8st for Gr\u00f8nlands Torg&#34;,
+    &#34;start_station_latitude&#34;:59.9115945,
+    &#34;start_station_longitude&#34;:10.7617736,
+    &#34;end_station_id&#34;:&#34;625&#34;,
+    &#34;end_station_name&#34;:&#34;Spikersuppa \u00d8st&#34;,
+    &#34;end_station_description&#34;:&#34;mot Stortingsgata&#34;,
+    &#34;end_station_latitude&#34;:59.91336,
+    &#34;end_station_longitude&#34;:10.737663
+ }
+]</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Add stations with ScatterplotLayer" duration="5">
+        <p>The Scatterplot Layer takes in paired latitude and longitude coordinated points and renders them as circles with a certain radius.</p>
+<p>Now we can add our first layer of data to the map. Add this code below map code in our script:</p>
+<p><code>index.html</code></p>
+<pre><code>const STATIONS = &#39;https://gbfs.urbansharing.com/oslobysykkel.no/station_information.json&#39;;
+
+const deckOverlay = new deck.GoogleMapsOverlay({
+  layers: [
+    new deck.ScatterplotLayer({
+      data: STATIONS,
+      dataTransform: d =&gt; d.data.stations.filter(f =&gt; f),
+      getPosition: f =&gt; [f.lon, f.lat],
+      getRadius: f =&gt; 2,
+      pickable: true,
+      radiusMinPixels: 5,
+      getColor: f =&gt; [51, 255, 60]
+    })
+  ]
+});
+deckOverlay.setMap(map);</code></pre>
+<p><strong>radiusMinPixels (Number, optional)</strong></p>
+<ul>
+<li>Default: 0</li>
+</ul>
+<p>The minimum radius in pixels. This prop can be used to prevent the circle from getting too small when zoomed out.</p>
+<p><strong>getPosition (</strong><a href="https://github.com/uber/deck.gl/blob/master/docs/developer-guide/using-layers.md#accessors" target="_blank"><strong>Function</strong></a><strong>, optional) </strong></p>
+<ul>
+<li>Default: object =&gt; object.position</li>
+</ul>
+<p>Method called to retrieve the position of each object.</p>
+<p><strong>getRadius (</strong><a href="https://github.com/uber/deck.gl/blob/master/docs/developer-guide/using-layers.md#accessors" target="_blank"><strong>Function</strong></a><strong>|Number, optional) </strong></p>
+<ul>
+<li>Default: 1</li>
+</ul>
+<p>The radius of each object, in meters.</p>
+<ul>
+<li>If a number is provided, it is used as the radius for all objects.</li>
+<li>If a function is provided, it is called on each object to retrieve its radius.</li>
+</ul>
+<p>For more information check out documentation: </p>
+<p><a href="https://github.com/uber/deck.gl/blob/master/docs/layers/scatterplot-layer.md" target="_blank"><paper-button class="colored" raised>ScatterplotLayer</paper-button></a></p>
+<h2 is-upgraded><strong>Verify Scatterplot result</strong></h2>
+<p>Now we should be able to see bike station positions on the map:</p>
+<p class="image-container"><img style="width: 578.22px" src="img/4a4520078e94a4d2.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Add trips with ArcLayer" duration="5">
+        <p>The Arc Layer renders raised arcs joining pairs of source and target points, specified as latitude/longitude coordinates.</p>
+<p>Oslo City bicycle generates a lot of data every day. To simplify our task, we are going to use data from trip in Oslo for one day  for a time between 8 a.m and 9 a.m:</p>
+<p><code>index.html</code></p>
+<pre><code>const TRIPS =&#39;https://kristina-simakova.github.io/deckgl-demo/trips.json&#39;;</code></pre>
+<p>Now we can add another layer of data to <code>layers</code> array: </p>
+<p><code>index.html</code></p>
+<pre><code>new deck.ArcLayer({
+        id: &#39;arcs&#39;,
+        data: TRIPS,
+        getSourcePosition: f =&gt; [f.start_station_longitude,f.start_station_latitude],
+        getTargetPosition: f =&gt; [f.end_station_longitude, f.end_station_latitude],
+        getSourceColor: [0, 128, 200],
+        getTargetColor: [200, 0, 80],
+        getWidth: 2
+      })</code></pre>
+<p><strong>getWidth (</strong><a href="https://github.com/uber/deck.gl/blob/master/docs/developer-guide/using-layers.md#accessors" target="_blank"><strong>Function</strong></a><strong>|Number, optional) </strong></p>
+<ul>
+<li>Default: 1</li>
+</ul>
+<p>The line width of each object, in units specified by widthUnits (default pixels).</p>
+<ul>
+<li>If a number is provided, it is used as the line width for all objects.</li>
+<li>If a function is provided, it is called on each object to retrieve its line width.</li>
+</ul>
+<p><strong>getSourcePosition (</strong><a href="https://github.com/uber/deck.gl/blob/master/docs/developer-guide/using-layers.md#accessors" target="_blank"><strong>Function</strong></a><strong>, optional) </strong></p>
+<ul>
+<li>Default: object =&gt; object.sourcePosition</li>
+</ul>
+<p>Method called to retrieve the source position of each object.</p>
+<p><strong>getTargetPosition (</strong><a href="https://github.com/uber/deck.gl/blob/master/docs/developer-guide/using-layers.md#accessors" target="_blank"><strong>Function</strong></a><strong>, optional) </strong></p>
+<ul>
+<li>Default: object =&gt; object.targetPosition</li>
+</ul>
+<p>Method called to retrieve the target position of each object.</p>
+<p>For more information check out documentation: </p>
+<p><a href="https://github.com/uber/deck.gl/blob/master/docs/layers/arc-layer.md" target="_blank"><paper-button class="colored" raised>ArcLayer</paper-button></a></p>
+<h2 is-upgraded><strong>Verify the result</strong></h2>
+<p>Now we should be able to see all trips made on the 1st of August from 8 a.m to 9 a.m:</p>
+<p class="image-container"><img style="width: 624.00px" src="img/c9cfb77aa987bb0d.png"></p>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Bonus: Style your map" duration="5">
+        <p>Use Styling Wizard to customize your map and data visualisation. This tool can help to customize colors, roads and labels. You can also hide maps features. Check out Styling Wizard and create your own style:</p>
+<p><a href="https://mapstyle.withgoogle.com/" target="_blank"><paper-button class="colored" raised>Styling Wizard</paper-button></a></p>
+<p>Add generated json object in <code>&lt;script&gt;</code> element inside <code>&lt;head&gt;</code>  </p>
+<p><code>index.html</code></p>
+<pre><code>&lt;script id=&#34;map-style&#34; type=&#34;application/json&#34;&gt;
+      [
+        {
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#212121&#34;}]
+        },
+        {
+          &#34;elementType&#34;: &#34;labels.icon&#34;,
+          &#34;stylers&#34;: [{&#34;visibility&#34;: &#34;off&#34;}]
+        },
+        {
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#757575&#34;}]
+        },
+        {
+          &#34;elementType&#34;: &#34;labels.text.stroke&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#212121&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;administrative&#34;,
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#757575&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;administrative.country&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#9e9e9e&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;administrative.locality&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#bdbdbd&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;poi&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#757575&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;poi.park&#34;,
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#181818&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;poi.park&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#616161&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;poi.park&#34;,
+          &#34;elementType&#34;: &#34;labels.text.stroke&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#1b1b1b&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;road&#34;,
+          &#34;elementType&#34;: &#34;geometry.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#2c2c2c&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;road&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#8a8a8a&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;road.arterial&#34;,
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#373737&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;road.highway&#34;,
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#3c3c3c&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;road.highway.controlled_access&#34;,
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#4e4e4e&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;road.local&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#616161&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;transit&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#757575&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;water&#34;,
+          &#34;elementType&#34;: &#34;geometry&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#000000&#34;}]
+        },
+        {
+          &#34;featureType&#34;: &#34;water&#34;,
+          &#34;elementType&#34;: &#34;labels.text.fill&#34;,
+          &#34;stylers&#34;: [{&#34;color&#34;: &#34;#3d3d3d&#34;}]
+        }
+      ]
+&lt;/script&gt;</code></pre>
+<p>Now add styles to the <code>map</code> object:</p>
+<p><code>index.html</code></p>
+<pre><code>const map = new google.maps.Map(document.getElementById(&#39;container&#39;), {
+      center: {lat: 59.9127, lng: 10.7461},
+      zoom: 15,
+      styles: JSON.parse(document.getElementById(&#39;map-style&#39;).innerText),
+      mapTypeControlOptions: {
+         mapTypeIds: [&#39;roadmap&#39;]
+      }
+});</code></pre>
+
+
+      </google-codelab-step>
+    
+      <google-codelab-step label="Congratulations" duration="0">
+        <p>Congratulations, you&#39;ve successfully completed this tutorial.</p>
+<p>You used Google Maps and Deck.gl to visualise trip data from Oslo City Bike. You also learnt how to style Google Maps and hide features.</p>
+<p><a href="https://github.com/Kristina-Simakova/deckgl-demo" target="_blank"><paper-button class="colored" raised>Source Code</paper-button></a></p>
+
+
+      </google-codelab-step>
+    
+  </google-codelab>
+
+  <script src="https://storage.googleapis.com/codelab-elements/native-shim.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/custom-elements.min.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/prettify.js"></script>
+  <script src="https://storage.googleapis.com/codelab-elements/codelab-elements.js"></script>
+
+</body>
+</html>
